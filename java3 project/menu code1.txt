@@ -1,0 +1,85 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+public class Menu extends JFrame implements ActionListener {
+    private JMenu m1,m2,m3,submenu;
+    private JMenuBar menuBar;
+    private JMenuItem item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11;
+    private JPopupMenu popupMenu;
+    private JLabel lbl;
+   public Menu(){
+       setTitle("Menu Example ");
+       setSize(600,600);
+       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+       setLocationRelativeTo(null);
+       setResizable(false);
+       menuBar=new JMenuBar();
+       m1=new JMenu("Account");
+       item1=new JMenuItem("Create Account");
+       item2=new JMenuItem("Deposit");
+       item3=new JMenuItem("Withdraw");
+       m1.add(item1);
+       m1.add(item2);
+       m1.add(item3);
+       m2=new JMenu("View");
+       item4=new JMenuItem("Show Balance");
+       item5=new JMenuItem("Show Transaction History");
+       m2.add(item4);
+       m2.add(item5);
+       submenu=new JMenu("Filter by");
+       item6=new JMenuItem("Filter by Date");
+       item7=new JMenuItem("Filter by Amount");
+       submenu.add(item6);
+       submenu.add(item7);
+       m2.add(submenu);
+       m3=new JMenu("Help");
+       item8=new JMenuItem("User Manual");
+       item9=new JMenuItem("About");
+       m3.add(item8);
+       m3.add(item9);
+       popupMenu=new JPopupMenu();
+       item10=new JMenuItem("Refresh");
+       item11=new JMenuItem("Export");
+       popupMenu.add(item10);
+       popupMenu.add(item11);
+       menuBar.add(m1);
+       menuBar.add(m2);
+       menuBar.add(m3);
+       setJMenuBar(menuBar);
+       item2.addActionListener(this);
+       item3.addActionListener(this);
+       item4.addActionListener(this);
+       item5.addActionListener(this);
+       item6.addActionListener(this);
+       item7.addActionListener(this);
+       item8.addActionListener(this);
+       item9.addActionListener(this);
+       item10.addActionListener(this);
+       item11.addActionListener(this);
+      lbl=new JLabel("Right-click anywhere here to open popup menu ",SwingConstants.CENTER);
+       lbl.addMouseListener(new MouseAdapter() {
+           public void mouseReleased(MouseEvent e) {
+               if (e.isPopupTrigger()) {  // يتأكد إذا كان الضغط هو ضغطة زر الفأرة الأيمن
+                   popupMenu.show(lbl, e.getX(), e.getY());  // يظهر القائمة المنبثقة
+               }
+           }
+       });
+      lbl.setBounds(50,100,400,50);
+      lbl.setBackground(Color.LIGHT_GRAY);
+      add(lbl);
+      setVisible(true);
+
+
+
+
+
+   }
+
+    public static void main(String[] args) {
+        new Menu();
+    }
+    public void actionPerformed(ActionEvent e){
+JMenuItem source=(JMenuItem) e.getSource();
+JOptionPane.showMessageDialog(this,"YOU PRESSED : "+source.getText());
+    }
+}
