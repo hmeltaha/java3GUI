@@ -1,0 +1,679 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
+
+public class MenuProject extends JFrame implements ActionListener {
+
+    // تعريف المتغيرات
+    private JMenuBar menuBar;
+    private JMenu accountMenu, viewMenu, helpMenu;
+    private JMenuItem investmentItem, balanceItem,item1,item2;
+    private JMenuItem detailsItem, historyItem;
+    private JMenu filterSubmenu;
+    private JMenuItem dateItem, amountItem;
+    private JMenuItem instructionsItem, aboutItem,deposit,withdraw;
+    private JPopupMenu popupMenu;
+    private JMenuItem refreshItem, exportItem, clearItem;
+    private JLabel centerLabel,balanceValueLabel;
+    private int years;
+    private double balancea;
+    private JPanel topPanel,centerPanel,mainPanel;
+private double currentBalance=1000.00;
+    private ArrayList<String> transactionHistory = new ArrayList<>();
+    public MenuProject() {
+        setTitle("Bank System");
+        setSize(1200, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(240,248,255));
+         addTransaction("Account Created ",0,currentBalance);
+        menuBar = new JMenuBar();
+
+
+        accountMenu = new JMenu("Account");
+        accountMenu.setForeground(Color.LIGHT_GRAY);
+        item1=new JMenuItem("login");
+        item2=new JMenuItem("logout");
+       accountMenu.add(item1);
+       accountMenu.add(item2);
+
+        viewMenu = new JMenu("View");
+        viewMenu.setForeground(Color.LIGHT_GRAY);
+        detailsItem = new JMenuItem("Account Details");
+        investmentItem = new JMenuItem("Investment Calculator");
+        balanceItem = new JMenuItem("Check Balance");
+        historyItem = new JMenuItem("Transaction History");
+        deposit=new JMenuItem("Deposit");
+        withdraw=new JMenuItem("Withdraw");
+        viewMenu.add(investmentItem);
+        viewMenu.add(balanceItem);
+        viewMenu.add(detailsItem);
+        viewMenu.add(historyItem);
+        viewMenu.add(deposit);
+        viewMenu.add(withdraw);
+
+        filterSubmenu = new JMenu("Filter by");
+        dateItem = new JMenuItem("Filter by Date");
+        amountItem = new JMenuItem("Filter by Amount");
+        filterSubmenu.add(dateItem);
+        filterSubmenu.add(amountItem);
+        viewMenu.add(filterSubmenu);
+
+        helpMenu = new JMenu("Help");
+        helpMenu.setForeground(Color.LIGHT_GRAY);
+        instructionsItem = new JMenuItem("Instructions");
+        aboutItem = new JMenuItem("About");
+        helpMenu.add(instructionsItem);
+        helpMenu.add(aboutItem);
+
+        menuBar.add(accountMenu);
+        menuBar.add(viewMenu);
+        menuBar.add(helpMenu);
+        setJMenuBar(menuBar);
+
+
+        investmentItem.addActionListener(this);
+        balanceItem.addActionListener(this);
+        detailsItem.addActionListener(this);
+        historyItem.addActionListener(this);
+        dateItem.addActionListener(this);
+        amountItem.addActionListener(this);
+        instructionsItem.addActionListener(this);
+        aboutItem.addActionListener(this);
+        deposit.addActionListener(this);
+        withdraw.addActionListener(this);
+
+        popupMenu = new JPopupMenu();
+        refreshItem = new JMenuItem("Refresh");
+        exportItem = new JMenuItem("Export Data");
+        clearItem = new JMenuItem("Clear");
+        popupMenu.add(refreshItem);
+        popupMenu.add(exportItem);
+        popupMenu.add(clearItem);
+
+        refreshItem.addActionListener(this);
+        exportItem.addActionListener(this);
+        clearItem.addActionListener(this);
+        JLabel balanceTitleLabel = new JLabel("💰 Current Balance:");
+        balanceTitleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        balanceTitleLabel.setForeground(Color.WHITE);
+
+        balanceValueLabel = new JLabel("$" + String.format("%.2f", currentBalance));
+        balanceValueLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        balanceValueLabel.setForeground(new Color(255, 215, 0));
+       mainPanel=new JPanel();
+       mainPanel.setBackground(Color.LIGHT_GRAY);
+       mainPanel.setLayout(new BorderLayout());
+
+      centerPanel = new JPanel();
+        centerPanel.setBackground(new Color(240, 248, 255)); // AliceBlue
+        centerPanel.setLayout(new BorderLayout());
+
+        centerLabel = new JLabel("Right-click anywhere here to open popup menu", SwingConstants.CENTER);
+        centerLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        centerLabel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 200), 2));
+        centerLabel.setOpaque(true);
+        centerLabel.setBackground(new Color(255, 255, 224)); // LightYellow
+        centerLabel.setForeground(new Color(70, 130, 200));
+
+        centerLabel.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    popupMenu.show(centerLabel, e.getX(), e.getY());
+                }
+            }
+        });
+        mainPanel.add(centerLabel,BorderLayout.CENTER);
+        add(mainPanel,BorderLayout.CENTER);
+
+        centerPanel.add(centerLabel, BorderLayout.CENTER);
+
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+
+        if (source == investmentItem) {
+            openInvestmentCalculator();
+        } else if (source == balanceItem) {
+            showBalanceWindow();
+        } else if (source == detailsItem) {
+            showMessage("Account Details clicked");
+        } else if (source == historyItem) {
+                showTransactionHistory("All",0);
+        } else if (source == dateItem) {
+            filterByDate();
+        } else if (source == amountItem) {
+            filterByAmount();
+        } else if (source == instructionsItem) {
+            showInstructions();
+        } else if (source == aboutItem) {
+            showAbout();
+        } else if (source == refreshItem) {
+            showMessage("Popup: Refresh clicked");
+        } else if (source == exportItem) {
+            showMessage("Popup: Export Data clicked");
+        } else if (source == clearItem) {
+            showMessage("Popup: Clear clicked");
+        } else if (source==deposit) {
+            deposit();
+        } else if (source==withdraw) {
+            withdraw();
+        }
+
+    }
+    private void deposit() {
+        String input = JOptionPane.showInputDialog(this, "Enter deposit amount:");
+
+        try {
+            double amount = Double.parseDouble(input);
+
+            if (amount > 0) {
+                currentBalance += amount;
+                addTransaction("Deposit", amount, currentBalance);
+                updateBalanceDisplay();
+                JOptionPane.showMessageDialog(this, "✅ Deposited: $" + String.format("%.2f", amount) +
+                        "\n💰 New balance: $" + String.format("%.2f", currentBalance));
+            } else {
+                JOptionPane.showMessageDialog(this, "Amount must be positive!");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid amount!");
+        }
+    }
+    private void withdraw() {
+        String input = JOptionPane.showInputDialog(this, "Enter withdrawal amount:");
+
+        try {
+            double amount = Double.parseDouble(input);
+
+            if (amount > 0 && amount <= currentBalance) {
+                currentBalance -= amount;
+                addTransaction("Withdraw", -amount, currentBalance);
+                updateBalanceDisplay();
+                JOptionPane.showMessageDialog(this, "✅ Withdrawn: $" + String.format("%.2f", amount) +
+                        "\n💰 New balance: $" + String.format("%.2f", currentBalance));
+            } else if (amount > currentBalance) {
+                JOptionPane.showMessageDialog(this, "❌ Insufficient balance!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Amount must be positive!");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid amount!");
+        }
+    }
+    private void showBalanceWindow() {
+        JFrame balanceFrame = new JFrame("Account Balance");
+        balanceFrame.setSize(400, 300);
+        balanceFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        balanceFrame.setLayout(new BorderLayout());
+        balanceFrame.getContentPane().setBackground(new Color(240, 248, 255));
+
+        JLabel titleLabel = new JLabel("Current Balance", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setForeground(new Color(70, 130, 200));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10));
+
+        JLabel balanceLabel = new JLabel("$" + String.format("%.2f", currentBalance), SwingConstants.CENTER);
+        balanceLabel.setFont(new Font("Arial", Font.BOLD, 48));
+        balanceLabel.setForeground(new Color(50, 205, 50));
+        balanceLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+
+        JButton closeButton = new JButton("Close");
+        closeButton.setFont(new Font("Arial", Font.BOLD, 14));
+        closeButton.setBackground(new Color(70, 130, 200));
+        closeButton.setForeground(Color.cyan);
+        closeButton.addActionListener(e -> balanceFrame.dispose());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(240, 248, 255));
+        buttonPanel.add(closeButton);
+
+        balanceFrame.add(titleLabel, BorderLayout.NORTH);
+        balanceFrame.add(balanceLabel, BorderLayout.CENTER);
+        balanceFrame.add(buttonPanel, BorderLayout.SOUTH);
+
+        balanceFrame.setLocationRelativeTo(this);
+        balanceFrame.setVisible(true);
+    }
+    private void showTransactionHistory(String filterType,double filterValue) {
+
+        if (transactionHistory.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No transactions yet!");
+            return;
+        }
+
+        JFrame historyFrame = new JFrame("Transaction History");
+        historyFrame.setSize(800, 500);
+        historyFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        historyFrame.getContentPane().setBackground(new Color(240, 248, 255));
+
+        JTextArea historyArea = new JTextArea();
+        historyArea.setEditable(false);
+        historyArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        historyArea.setBackground(new Color(255, 255, 224));
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("═══════════════════════════════════════════════════════════════════════════════════════════\n");
+        sb.append("                                      TRANSACTION HISTORY                                      \n");
+        sb.append("═══════════════════════════════════════════════════════════════════════════════════════════\n");
+        sb.append(String.format("%-20s %-25s %-15s %-15s\n", "Date & Time", "Transaction Type", "Amount", "Balance"));
+        sb.append("───────────────────────────────────────────────────────────────────────────────────────────\n");
+        boolean found=false;
+        // ✅ إضافة كل المعاملات
+        for (String transaction : transactionHistory) {
+            boolean include = false;
+            if (filterType.equals("Date")) {
+                include = true;
+            } else if (filterType.equals("Amount")) {
+                int dollarIndex = transaction.indexOf("$");
+                if (dollarIndex != -1) {
+                    String amountStr = transaction.substring(dollarIndex + 1);
+                    int spaceIndex = amountStr.indexOf(" ");
+                    if (spaceIndex != -1) {
+                        amountStr = amountStr.substring(0, spaceIndex);
+                    }
+                    try {
+                        double amount = Double.parseDouble(amountStr);
+                        if (Math.abs(amount) >= filterValue) {
+                            include = true;
+                        }
+                    } catch (NumberFormatException e) {
+                    }
+                }
+            }
+            if (include || filterType.equals("All")) {
+                sb.append(transaction).append("\n");
+                found = true;
+            }
+        }
+
+        if (!found) {
+            sb.append("No transactions match the filter!\n");
+        }
+
+
+
+
+        sb.append("───────────────────────────────────────────────────────────────────────────────────────────\n");
+
+        double totalDeposits = calculateTotalByType("Deposit");
+        double totalWithdrawals = calculateTotalByType("Withdraw");
+        double totalInvestment = calculateTotalByType("Investment");
+
+        sb.append(String.format("Total Deposits: $%-10.2f  Total Withdrawals: $%-10.2f  Total Investment: $%-10.2f\n",
+                totalDeposits, totalWithdrawals, totalInvestment));
+        sb.append("═══════════════════════════════════════════════════════════════════════════════════════════\n");
+
+        historyArea.setText(sb.toString());
+        historyFrame.add(new JScrollPane(historyArea));
+        historyFrame.setLocationRelativeTo(this);
+        historyFrame.setVisible(true);
+    }
+    private void filterByDate() {
+        String input = JOptionPane.showInputDialog(this, "Enter date (yyyy-MM-dd):");
+
+        if (input != null && !input.trim().isEmpty()) {
+            showTransactionHistory("Date", 0);
+        }
+    }
+    private void filterByAmount() {
+        String input = JOptionPane.showInputDialog(this, "Show transactions with amount >= :");
+
+        try {
+            double minAmount = Double.parseDouble(input);
+            showTransactionHistory("Amount", minAmount);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid amount!");
+        }
+    }
+    private void showInstructions() {
+        JFrame instructionsFrame = new JFrame("Instructions - User Guide");
+        instructionsFrame.setSize(600, 550);
+        instructionsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        instructionsFrame.getContentPane().setBackground(new Color(25, 25, 50));
+
+        JTextArea instructionsArea = new JTextArea();
+        instructionsArea.setEditable(false);
+        instructionsArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        instructionsArea.setBackground(new Color(30, 30, 60));
+        instructionsArea.setForeground(new Color(220, 220, 255));
+        instructionsArea.setMargin(new Insets(20, 25, 20, 25));
+
+        String instructions =
+                "═══════════════════════════════════════════════════════════════\n" +
+                        "                       I N S T R U C T I O N S                 \n" +
+                        "═══════════════════════════════════════════════════════════════\n\n" +
+
+                        "ACCOUNT MENU:\n" +
+                        "   Login     : Sign in to your account\n" +
+                        "   Logout    : Sign out from your account\n\n" +
+
+                        "VIEW MENU:\n" +
+                        "   Deposit          : Add money to your balance\n" +
+                        "   Withdraw         : Take money from your balance\n" +
+                        "   Check Balance    : View your current balance\n" +
+                        "   Investment Calc  : Calculate 5-year investment profit\n" +
+                        "   Account Details  : View your account information\n" +
+                        "   Transaction Hist : View all your transactions\n\n" +
+
+                        "FILTER BY (Submenu):\n" +
+                        "   Filter by Date    : Show transactions from specific date\n" +
+                        "   Filter by Amount  : Show transactions above certain amount\n\n" +
+
+                        "HELP MENU:\n" +
+                        "   Instructions  : Show this guide\n" +
+                        "   About         : Learn about the system\n\n" +
+
+                        "───────────────────────────────────────────────────────────────\n\n" +
+
+                        "TIPS:\n" +
+                        "   Right-click anywhere to open Popup Menu\n" +
+                        "   Calculate first, then Apply in Investment Calculator\n" +
+                        "   All transactions are saved automatically\n\n" +
+
+                        "IMPORTANT:\n" +
+                        "   You must LOGIN first to use the system\n" +
+                        "   Withdrawal cannot exceed your balance\n" +
+                        "   Deposit amount must be positive\n\n" +
+
+                        "═══════════════════════════════════════════════════════════════";
+
+        instructionsArea.setText(instructions);
+
+        JScrollPane scrollPane = new JScrollPane(instructionsArea);
+        scrollPane.getViewport().setBackground(new Color(30, 30, 60));
+        instructionsFrame.add(scrollPane);
+
+        instructionsFrame.setLocationRelativeTo(this);
+        instructionsFrame.setVisible(true);
+    }
+    private void showAbout() {
+        JFrame aboutFrame = new JFrame("About - Bank System");
+        aboutFrame.setSize(550, 500);
+        aboutFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        aboutFrame.getContentPane().setBackground(new Color(25, 25, 50));
+
+        JTextArea aboutArea = new JTextArea();
+        aboutArea.setEditable(false);
+        aboutArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        aboutArea.setBackground(new Color(30, 30, 60));
+        aboutArea.setForeground(new Color(220, 220, 255));
+        aboutArea.setMargin(new Insets(20, 25, 20, 25));
+
+        String about =
+                "═══════════════════════════════════════════════════════════════\n" +
+                        "                          A B O U T                            \n" +
+                        "═══════════════════════════════════════════════════════════════\n\n" +
+
+                        "BANK MANAGEMENT SYSTEM\n\n" +
+
+                        "VERSION: 1.0\n" +
+                        "DATE: May 2026\n\n" +
+
+                        "───────────────────────────────────────────────────────────────\n\n" +
+
+                        "SYSTEM OVERVIEW:\n" +
+                        "This system helps users manage their bank account,\n" +
+                        "track all transactions, and calculate investment profits.\n\n" +
+
+                        "───────────────────────────────────────────────────────────────\n\n" +
+
+                        "FEATURES:\n" +
+                        "   Login and Logout System\n" +
+                        "   Deposit and Withdraw Money\n" +
+                        "   Check Current Balance\n" +
+                        "   View Account Details\n" +
+                        "   Transaction History\n" +
+                        "   Investment Calculator (5 Years)\n" +
+                        "   Filter Transactions by Amount\n" +
+                        "   Popup Menu for Quick Actions\n" +
+                        "   Export Investment Results\n\n" +
+
+                        "───────────────────────────────────────────────────────────────\n\n" +
+
+                        "TECHNICAL DETAILS:\n" +
+                        "   Language: Java (Swing)\n" +
+                        "   GUI: Swing Components\n" +
+                        "   Data Storage: HashMap and ArrayList\n\n" +
+
+                        "───────────────────────────────────────────────────────────────\n\n" +
+
+                        "DEVELOPED BY:\n" +
+                        "   University Project\n" +
+                        "   Computer Science Department\n\n" +
+
+                        "═══════════════════════════════════════════════════════════════";
+
+        aboutArea.setText(about);
+
+        JScrollPane scrollPane = new JScrollPane(aboutArea);
+        scrollPane.getViewport().setBackground(new Color(30, 30, 60));
+        aboutFrame.add(scrollPane);
+
+        aboutFrame.setLocationRelativeTo(this);
+        aboutFrame.setVisible(true);
+    }
+
+    private double calculateTotalByType(String type) {
+        double total = 0.0;
+        for (String transaction : transactionHistory) {
+            if (transaction.contains(type)) {
+
+                int dollarIndex = transaction.indexOf("$");
+                if (dollarIndex != -1) {
+                    String amountStr = transaction.substring(dollarIndex + 1);
+                    int spaceIndex = amountStr.indexOf(" ");
+                    if (spaceIndex != -1) {
+                        amountStr = amountStr.substring(0, spaceIndex);
+                    }
+                    try {
+                        double amount = Double.parseDouble(amountStr);
+                        if (type.equals("Withdraw")) {
+                            total += amount;
+                        } else {
+                            total += amount;
+                        }
+                    } catch (NumberFormatException e) {
+
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    private void openInvestmentCalculator() {
+
+            JFrame calcFrame = new JFrame("Investment Calculator");
+            calcFrame.setSize(550, 550);
+            calcFrame.setLayout(null);
+            calcFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            calcFrame.getContentPane().setBackground(new Color(240, 248, 255));
+
+
+            JLabel balanceLabel = new JLabel("Initial Balance:");
+            balanceLabel.setBounds(30, 30, 100, 25);
+            balanceLabel.setFont(new Font("Arial", Font.BOLD, 12));
+
+            JTextField balanceField = new JTextField();
+            balanceField.setBounds(150, 30, 200, 25);
+            balanceField.setText(String.valueOf(currentBalance));  // الرصيد الحالي
+
+            JLabel rateLabel = new JLabel("Interest Rate (%):");
+            rateLabel.setBounds(30, 70, 100, 25);
+            rateLabel.setFont(new Font("Arial", Font.BOLD, 12));
+
+            JTextField rateField = new JTextField();
+            rateField.setBounds(150, 70, 200, 25);
+            rateField.setText("5");
+
+            JButton calculateBtn = new JButton("Calculate");
+            calculateBtn.setBounds(220, 110, 120, 30);
+            calculateBtn.setBackground(new Color(70, 130, 200));
+            calculateBtn.setForeground(Color.WHITE);
+
+            JTextArea resultArea = new JTextArea();
+            resultArea.setBounds(30, 160, 480, 220);
+            resultArea.setEditable(false);
+            resultArea.setBackground(new Color(255, 255, 224));
+            resultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+            JButton applyBtn = new JButton("Apply to Balance");
+            applyBtn.setBounds(180, 400, 150, 30);
+            applyBtn.setBackground(new Color(50, 205, 50));
+            applyBtn.setForeground(Color.WHITE);
+
+            JButton exportBtn = new JButton("Export");
+            exportBtn.setBounds(340, 400, 100, 30);
+            exportBtn.setBackground(new Color(70, 130, 200));
+            exportBtn.setForeground(Color.WHITE);
+
+
+            final double[] finalBalance = {currentBalance};
+            final double[] initialBalanceHolder = {currentBalance};
+
+            calculateBtn.addActionListener(ev -> {
+                try {
+                    double balance = Double.parseDouble(balanceField.getText());
+                    double rate = Double.parseDouble(rateField.getText()) / 100;
+                    initialBalanceHolder[0] = balance;
+
+                    resultArea.setText("");
+                    resultArea.append(String.format("%-10s %-20s %-20s\n", "Years", "Earning", "Balance"));
+                    resultArea.append("--------------------------------------------\n");
+
+                    for (int year = 1; year <= 5; year++) {
+                        double earning = balance * rate;
+                        balance += earning;
+                        resultArea.append(String.format("%-10d $%-19.2f $%-20.2f\n", year, earning, balance));
+                    }
+
+                    finalBalance[0] = balance;
+
+                } catch (NumberFormatException ex) {
+                    resultArea.setText("Please enter valid numbers!");
+                }
+            });
+
+
+            applyBtn.addActionListener(ev ->{
+               try{
+                    double earned = finalBalance[0] - initialBalanceHolder[0];
+                    double initialBalance=Double.parseDouble(balanceField.getText());
+                    if(earned>0) {
+                        addToBalance(earned);
+                        JOptionPane.showMessageDialog(calcFrame,
+                                "✅ Investment applied!\n" +
+                                        "💰 You earned: $" + String.format("%.2f", earned) + "\n" +
+                                        "🏦 New balance: $" + String.format("%.2f", currentBalance));
+
+
+                    } else {
+                    JOptionPane.showMessageDialog(calcFrame, "Please calculate first!");
+                }
+
+                    }catch(NumberFormatException ex){
+                   JOptionPane.showMessageDialog(calcFrame,"ERROR");}});
+
+
+            exportBtn.addActionListener(ev -> {
+
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Save Investment Results");
+                int result = fc.showSaveDialog(calcFrame);
+
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    try (PrintWriter pw = new PrintWriter(file)) {
+                        pw.println("Investment Calculator Results");
+                        pw.println("============================");
+                        pw.println(resultArea.getText());
+                        pw.println("============================");
+                        pw.println("Date: " + new java.util.Date());
+                        JOptionPane.showMessageDialog(calcFrame, "File saved: " + file.getName());
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(calcFrame, "Error: " + ex.getMessage());
+                    }
+                }
+            });
+
+            calcFrame.add(balanceLabel);
+            calcFrame.add(balanceField);
+            calcFrame.add(rateLabel);
+            calcFrame.add(rateField);
+            calcFrame.add(calculateBtn);
+            calcFrame.add(resultArea);
+            calcFrame.add(applyBtn);
+            calcFrame.add(exportBtn);
+
+            calcFrame.setVisible(true);
+        }
+
+    private void addTransaction(String type, double amount, double balance) {
+        String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
+        String amountStr;
+
+        if (amount > 0) {
+            amountStr = "+$" + String.format("%.2f", amount);
+        } else if (amount < 0) {
+            amountStr = "-$" + String.format("%.2f", Math.abs(amount));
+        } else {
+            amountStr = "-----";
+        }
+
+        String transaction = String.format("%-20s %-20s %-12s $%-10.2f",
+                date, type, amountStr, balance);
+        transactionHistory.add(transaction);
+    }
+    private void updateBalanceDisplay() {
+
+            if (balanceValueLabel != null) {
+                balanceValueLabel.setText("$" + String.format("%.2f", currentBalance));
+            }
+
+    }
+
+    private void addToBalance(double amount) {
+        currentBalance += amount;
+        updateBalanceDisplay();
+        addTransaction("Investment Profit", amount, currentBalance);
+
+    }
+
+    private void showMessage(String message) {
+        JOptionPane.showMessageDialog(this, "Pressed: " + message);
+    }
+
+    public static void main(String[] args) {
+
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            new MenuProject();
+
+}}
+
+
